@@ -1,4 +1,4 @@
-from model_5.mamba import EncoderMambaBlock, EncoderMambaBlock2
+from model_5.mamba import EncoderMambaBlock
 from common import *
 
 device_id0 = 'cuda:0'
@@ -14,25 +14,25 @@ class mamba_Unet(nn.Module):
         self.H = height
         self.W = width
         self.step1 = nn.Sequential(
-            EncoderMambaBlock2(n_feats, height, width),
+            EncoderMambaBlock(n_feats, height, width),
             conv(n_feats, n_feats, 3),
             conv(n_feats, n_feats, 3),
             nn.ReLU()
         )
         self.step2 = nn.Sequential(
-            EncoderMambaBlock2(n_feats, height, width),
+            EncoderMambaBlock(n_feats, height, width),
             conv(n_feats, n_feats, 3),
             conv(n_feats, n_feats, 3),
             nn.ReLU()
         )
         self.step3 = nn.Sequential(
-            EncoderMambaBlock2(n_feats, height, width),
+            EncoderMambaBlock(n_feats, height, width),
             conv(n_feats, n_feats, 3),
             conv(n_feats, n_feats, 3),
             nn.ReLU()
         )
         self.step4 = nn.Sequential(
-            EncoderMambaBlock2(n_feats, height, width),
+            EncoderMambaBlock(n_feats, height, width),
             conv(n_feats, n_feats, 3),
             conv(n_feats, n_feats, 3),
             nn.ReLU()
