@@ -1,0 +1,6 @@
+#python main.py train --dataset_name 'PaviaC' --n_blocks 4 --epochs 200 --batch_size 32 --model_title "MTSR" --n_subs 16 --n_ovls 0 --n_feats 240 --n_scale 2 --gpus "0,1,2,3"
+#python main.py train --dataset_name 'PaviaC' --n_blocks 4 --epochs 200 --batch_size 8 --model_title "MTSR" --n_subs 16 --n_ovls 0 --n_feats 240 --n_scale 4 --gpus "0,1,2,3"
+python main.py train --dataset_name 'PaviaC' --n_blocks 4 --epochs 1 --batch_size 32 --model_title "MTSR" --n_subs 32 --n_ovls 0 --n_feats 256 --n_scale 8 --gpus "0,1,2,3"
+#python main.py train --dataset_name 'Chikusei' --n_blocks 4 --epochs 200 --batch_size 32 --model_title "MTSR" --n_subs 16 --n_ovls 0 --n_feats 240 --n_scale 2 --gpus "0,1,2,3"
+#python main.py train --dataset_name 'Chikusei' --n_blocks 4 --epochs 200 --batch_size 32 --model_title "MTSR" --n_subs 16 --n_ovls 0 --n_feats 240 --n_scale 4 --gpus "0,1,2,3"
+#python main.py train --dataset_name 'Chikusei' --n_blocks 4 --epochs 200 --batch_size 32 --model_title "MTSR" --n_subs 16 --n_ovls 0 --n_feats 240 --n_scale 8 --gpus "0,1,2,3"
