@@ -29,6 +29,7 @@ class MSAMG(nn.Module):
 
         self.dcb = DCB(n_subs)
         self.dwtca = DWTCA(n_subs, n_subs)
+        # self.lskblock = LSKblock(n_subs)
         self.conv1 = conv(n_subs * 3, n_subs, 1)
         self.tail = conv(n_colors, n_feats, 1)
 
@@ -45,6 +46,7 @@ class MSAMG(nn.Module):
             if g == 0:
                 x_spa_spe = self.dcb(xi)
                 x_spa_spe = self.dwtca(x_spa_spe)
+                # x_spa_spe = self.lskblock(xi)
                 xi_pre = xi
                 x_pre = x_spa_spe
                 x_g = x_spa_spe
@@ -53,6 +55,7 @@ class MSAMG(nn.Module):
                 x_inter = self.conv1(x_inter)
                 x_inter = self.dcb(x_inter)
                 x_spa_spe = self.dwtca(x_inter)
+                # x_spa_spe = self.lskblock(x_inter)
                 xi_pre = xi
                 x_pre = x_spa_spe
                 x_g = x_spa_spe
@@ -109,3 +112,45 @@ class DWTCA(nn.Module):
         x_spa2 = self.sa(x_e)
         y = x_spa2
         return y
+
+#
+# class LSKblock(nn.Module):
+#     def __init__(self, dim):
+#         super().__init__()
+#         # 深度可分离卷积，保持输入和输出通道数一致，卷积核大小为5
+#         self.conv0 = nn.Conv2d(dim, dim, 5, padding=2, groups=dim)
+#         # 空间卷积，卷积核大小为7，膨胀度为3，增加感受野
+#         self.conv_spatial = nn.Conv2d(dim, dim, 7, stride=1, padding=9, groups=dim, dilation=3)
+#         # 1*1卷积，用于降维
+#         self.conv1 = nn.Conv2d(dim, dim // 2, 1)
+#         self.conv2 = nn.Conv2d(dim, dim // 2, 1)
+#         # 结合平均和最大注意力的卷积
+#         self.conv_squeeze = nn.Conv2d(2, 2, 7, padding=3)
+#         # 最后的1*1卷积，将通道数恢复到原始维度
+#         self.conv = nn.Conv2d(dim // 2, dim, 1)
+#
+#     def forward(self, x):
+#         # 对输入进行两种不同的卷积操作以生成注意力特征
+#         attn1 = self.conv0(x)  # 第一个卷积特征
+#         attn2 = self.conv_spatial(attn1)  # 空间卷积特征
+#
+#         # 对卷积特征进行1*1卷积以降维
+#         attn1 = self.conv1(attn1)
+#         attn2 = self.conv2(attn2)
+#
+#         # 将两个特征的通道维度上拼接
+#         attn = torch.cat([attn1, attn2], dim=1)
+#         # 计算平均注意力特征
+#         avg_attn = torch.mean(attn, dim=1, keepdim=True)
+#         # 计算最大注意力特征
+#         max_attn, _ = torch.max(attn, dim=1, keepdim=True)
+#         # 计算平均和最大注意力特征
+#         agg = torch.cat([avg_attn, max_attn], dim=1)
+#         # 通过卷积注意力权重，并应用sigmoid激活函数
+#         sig = self.conv_squeeze(agg).sigmoid()
+#         # 根据注意力权重调整特征
+#         attn = attn1 * sig[:, 0, :, :].unsqueeze(1) + attn2 * sig[:, 1, :, :].unsqueeze(1)
+#         # 最终卷积恢复到原始通道数
+#         attn = self.conv(attn)
+#         # 通过注意力特征加权输入
+#         return x * attn
