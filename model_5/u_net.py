@@ -4,51 +4,6 @@ from common import *
 device_id0 = 'cuda:0'
 torch.autograd.set_detect_anomaly(True)
 
-class mamba_Unet(nn.Module):
-    """Mamba Transformer U-net"""
-
-    def __init__(self, n_feats, n_mamba, height, width, conv=default_conv):
-        super(mamba_Unet, self).__init__()
-
-        self.N = n_mamba
-        self.H = height
-        self.W = width
-        self.step1 = nn.Sequential(
-            EncoderMambaBlock(n_feats, height, width),
-            conv(n_feats, n_feats, 3),
-            conv(n_feats, n_feats, 3),
-            nn.ReLU()
-        )
-        self.step2 = nn.Sequential(
-            EncoderMambaBlock(n_feats, height, width),
-            conv(n_feats, n_feats, 3),
-            conv(n_feats, n_feats, 3),
-            nn.ReLU()
-        )
-        self.step3 = nn.Sequential(
-            EncoderMambaBlock(n_feats, height, width),
-            conv(n_feats, n_feats, 3),
-            conv(n_feats, n_feats, 3),
-            nn.ReLU()
-        )
-        self.step4 = nn.Sequential(
-            EncoderMambaBlock(n_feats, height, width),
-            conv(n_feats, n_feats, 3),
-            conv(n_feats, n_feats, 3),
-            nn.ReLU()
-        )
-
-    def forward(self, x):
-        b, c, h, w = x.shape
-        skip = x
-        x1 = self.step1(x)
-        x2 = self.step2(x1)
-        x3 = self.step3(x2)
-        x4 = self.step4(x3)
-        y = x4 + skip
-
-        return y
-
 # class mamba_Unet(nn.Module):
 #     """Mamba Transformer U-net"""
 #
@@ -61,28 +16,26 @@ class mamba_Unet(nn.Module):
 #         self.step1 = nn.Sequential(
 #             EncoderMambaBlock(n_feats, height, width),
 #             conv(n_feats, n_feats, 3),
+#             conv(n_feats, n_feats, 3),
+#             nn.ReLU()
 #         )
 #         self.step2 = nn.Sequential(
-#             Down(n_feats, n_feats * 2),
-#             EncoderMambaBlock(n_feats * 2, height // 2, width // 2),
-#             conv(n_feats * 2, n_feats * 2, 3),
-#         )
-#         self.step3 = nn.Sequential(
-#             Down(n_feats * 2, n_feats * 4),
-#             EncoderMambaBlock(n_feats * 4, height // 4, width // 4),
-#             conv(n_feats * 4, n_feats * 4, 3),
-#         )
-#         self.up_1 = Up(n_feats * 4, n_feats * 2)
-#         self.step4 = nn.Sequential(
-#             EncoderMambaBlock(n_feats * 2, height // 2, width // 2),
-#             conv(n_feats * 2, n_feats * 2, 3),
-#         )
-#         self.up_2 = Up(n_feats * 2, n_feats)
-#         self.step5 = nn.Sequential(
 #             EncoderMambaBlock(n_feats, height, width),
 #             conv(n_feats, n_feats, 3),
 #             conv(n_feats, n_feats, 3),
-#             nn.ReLU(),
+#             nn.ReLU()
+#         )
+#         self.step3 = nn.Sequential(
+#             EncoderMambaBlock(n_feats, height, width),
+#             conv(n_feats, n_feats, 3),
+#             conv(n_feats, n_feats, 3),
+#             nn.ReLU()
+#         )
+#         self.step4 = nn.Sequential(
+#             EncoderMambaBlock(n_feats, height, width),
+#             conv(n_feats, n_feats, 3),
+#             conv(n_feats, n_feats, 3),
+#             nn.ReLU()
 #         )
 #
 #     def forward(self, x):
@@ -91,13 +44,51 @@ class mamba_Unet(nn.Module):
 #         x1 = self.step1(x)
 #         x2 = self.step2(x1)
 #         x3 = self.step3(x2)
-#         x3_up = self.up_1(x3, x2)
-#         x4 = self.step4(x3_up)
-#         x4_up = self.up_2(x4, x1)
-#         x5 = self.step5(x4_up)
-#         y = x5 + skip
+#         x4 = self.step4(x3)
+#         y = x4 + skip
 #
 #         return y
+
+class mamba_Unet(nn.Module):
+    """Mamba Transformer U-net"""
+
+    def __init__(self, n_feats, n_mamba, height, width, conv=default_conv):
+        super(mamba_Unet, self).__init__()
+
+        self.N = n_mamba
+        self.H = height
+        self.W = width
+        self.step1 = nn.Sequential(
+            EncoderMambaBlock(n_feats, height, width),
+            conv(n_feats, n_feats, 3),
+        )
+        self.step2 = nn.Sequential(
+            Down(n_feats, n_feats * 2),
+            EncoderMambaBlock(n_feats * 2, height // 2, width // 2),
+            conv(n_feats * 2, n_feats * 2, 3),
+            nn.ReLU(),
+        )
+        self.step3 = nn.Sequential(
+            EncoderMambaBlock(n_feats * 2, height // 2, width // 2),
+            conv(n_feats * 2, n_feats * 2, 3),
+        )
+        self.up = Up(n_feats * 2, n_feats)
+        self.step4 = nn.Sequential(
+            EncoderMambaBlock(n_feats, height, width),
+            conv(n_feats, n_feats, 3),
+            nn.ReLU(),
+        )
+
+    def forward(self, x):
+        b, c, h, w = x.shape
+        skip = x
+        x1 = self.step1(x)
+        x2 = self.step2(x1)
+        x3 = self.step3(x2)
+        x3_up = self.up(x3)
+        x4 = self.step4(x3_up)
+        y = x4 + skip
+        return y
 
 
 class PixelShuffle(nn.Module):
@@ -147,10 +138,9 @@ class Up(nn.Module):
             nn.LeakyReLU()
         )
 
-    def forward(self, x1, x2):
+    def forward(self, x1):
         x1 = self.up(x1)
-        x = x1 + x2
-        return self.conv(x)
+        return self.conv(x1)
 
 
 class Down(nn.Module):
