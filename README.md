@@ -1,7 +1,7 @@
 # MTSR
 The pytorch code of hyperspectral image super-resolution method MTSR.
 
-The code will be made available upon acceptance.
+The code will be released after acceptance.
 
 ## Requirements
 * Python 3.10
